@@ -17,44 +17,50 @@ def traincheck(station_from="ELGH", station_to="COSHAM"):
 
     # Time calculation
 
-    time_calc = datetime.now()
-    rtt_now = "{}/{}/{}/{}00".format(time_calc.year, time_calc.month, time_calc.day, time_calc.hour)
+    time_now = datetime.now()
 
-    time_calc = time_calc + timedelta(hours=1)
-    rtt_next_hour = "{}/{}/{}/{}00".format(time_calc.year, time_calc.month, time_calc.day, time_calc.hour)
+    time_calc = time_now
+    rtt_now = "{}/{:0>2}/{:0>2}/{:0>2}00".format(time_calc.year, time_calc.month, time_calc.day, time_calc.hour)
+    # Debug to show whole day
+    #rtt_now = "{}/{:0>2}/{:0>2}".format(time_calc.year, time_calc.month, time_calc.day)
 
-    time_calc = datetime.now()
-    time_calc = time_calc - timedelta(hours=1)
-    rtt_last_hour = "{}/{}/{}/{}00".format(time_calc.year, time_calc.month, time_calc.day, time_calc.hour)
+    time_calc = time_now + timedelta(hours=1)
+    rtt_next_hour = "{}/{:0>2}/{:0>2}/{:0>2}00".format(time_calc.year, time_calc.month, time_calc.day, time_calc.hour)
 
-    time_calc = datetime.now()
-    time_calc = time_calc + timedelta(days=1)
-    rtt_next_day = "{}/{}/{}/0700".format(time_calc.year, time_calc.month, time_calc.day)
+    time_calc = time_now - timedelta(hours=1)
+    rtt_last_hour = "{}/{:0>2}/{:0>2}/{:0>2}00".format(time_calc.year, time_calc.month, time_calc.day, time_calc.hour)
+
+    time_calc = time_now + timedelta(days=1)
+    rtt_next_day = "{}/{:0>2}/{:0>2}/0700".format(time_calc.year, time_calc.month, time_calc.day)
 
     #API Calls
 
     services_list = []
 
-    request = requests.get(rtt_baseaddress + rtt_search + rtt_last_hour, auth=auth)
+    request = requests.get(rtt_baseaddress + rtt_search + rtt_last_hour + "/arrivals", auth=auth)
     if request.status_code == 200:
         data = request.json()
-        services_list = services_list + data['services']
+        if data['services'] is not None:
+            services_list = services_list + data['services']
 
     request = requests.get(rtt_baseaddress + rtt_search + rtt_now, auth=auth)
     if request.status_code == 200:
         data = request.json()
-        services_list = services_list + data['services']
+        if data['services'] is not None:
+            services_list = services_list + data['services']
 
     request = requests.get(rtt_baseaddress + rtt_search + rtt_next_hour, auth=auth)
     if request.status_code == 200:
         data = request.json()
-        services_list = services_list + data['services']
-
+        if data['services'] is not None:
+            services_list = services_list + data['services']
+    
     request = requests.get(rtt_baseaddress + rtt_search + rtt_next_day, auth=auth)
     if request.status_code == 200:
         data = request.json()
-        services_list = services_list + data['services']
-
+        if data['services'] is not None:
+            services_list = services_list + data['services']
+    
     # Return list is a list of tuples containing origin place, origin time, planned time, estimated time (can be zero for future departures), 
     # difference (can be zero for future departures) & service type (Actual, Estimated, Future)
     # [(origin, origin_time, planned, estimated, difference, type)]
@@ -76,7 +82,7 @@ def traincheck(station_from="ELGH", station_to="COSHAM"):
             type = ""
 
 
-            if service['locationDetail']['tiploc'] == station_from:
+            if service['locationDetail']['tiploc'] == station_from and service['locationDetail']['isPublicCall'] == True and service['isPassenger'] == True:
 
                 origin_name = service['locationDetail']['origin'][0]['description']
                 origin_time = datetime.strptime(service['runDate'] + service['locationDetail']['origin'][0]['publicTime'],"%Y-%m-%d%H%M")

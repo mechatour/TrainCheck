@@ -9,7 +9,7 @@ tomorrow_list = []
 train_list = traincheck.traincheck("ELGH","COSHAM")
 
 for train in train_list:
-    origin_time = train[1].strftime("%H:%M")
+    origin_time = train[1].strftime("%d-%m %H:%M")
     planned_time = train[2].strftime("%H:%M")
     estimated_time = train[4].strftime("%H:%M")
     
@@ -34,7 +34,7 @@ for train in train_list:
         else:
             late_text = ""
     
-    train_text = "{} ({}) - Planned {} {} {}".format(train[0], origin_time, planned_time, estimated_text, late_text)
+    train_text = "{} - {} - Planned {} {} {}".format(origin_time, train[0], planned_time, estimated_text, late_text)
 
     # put them in groups
 

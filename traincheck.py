@@ -108,6 +108,10 @@ def traincheck(station_from="ELGH", station_to="COSHAM"):
         print (E)
         return []
 
+    # Sort by planned arrival time/date
+
+    return_list = sorted(return_list, key=lambda x: x[2])
+
     # Remove duplicates
 
     previous_date = datetime.min

@@ -43,19 +43,19 @@ def traincheck(station_from="ELGH", station_to="COSHAM"):
         if data['services'] is not None:
             services_list = services_list + data['services']
 
-    request = requests.get(rtt_baseaddress + rtt_search + rtt_now, auth=auth)
+    request = requests.get(rtt_baseaddress + rtt_search + rtt_now + "/arrivals", auth=auth)
     if request.status_code == 200:
         data = request.json()
         if data['services'] is not None:
             services_list = services_list + data['services']
 
-    request = requests.get(rtt_baseaddress + rtt_search + rtt_next_hour, auth=auth)
+    request = requests.get(rtt_baseaddress + rtt_search + rtt_next_hour + "/arrivals", auth=auth)
     if request.status_code == 200:
         data = request.json()
         if data['services'] is not None:
             services_list = services_list + data['services']
     
-    request = requests.get(rtt_baseaddress + rtt_search + rtt_next_day, auth=auth)
+    request = requests.get(rtt_baseaddress + rtt_search + rtt_next_day + "/arrivals", auth=auth)
     if request.status_code == 200:
         data = request.json()
         if data['services'] is not None:

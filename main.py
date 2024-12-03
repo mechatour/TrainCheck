@@ -45,6 +45,7 @@ def display_trains():
                 actual_list.append(train_text)
             elif train[3] == "E":
                 estimated_list.append(train_text)
+
     print ("Update time: {}".format(datetime.datetime.now().strftime("%d-%m-%Y %H:%M")))
     print ("Previous\n--------")
     for text in actual_list:

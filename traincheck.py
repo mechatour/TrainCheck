@@ -36,7 +36,6 @@ def traincheck(station_from="ELGH", station_to="COSHAM"):
 
     time_calc = time_now + timedelta(days=1)
     rtt_next_day = "{}/{:0>2}/{:0>2}/0700".format(time_calc.year, time_calc.month, time_calc.day)
-    rtt_next_day_2 = "{}/{:0>2}/{:0>2}/0600".format(time_calc.year, time_calc.month, time_calc.day)
 
     #API Calls
 
@@ -71,12 +70,6 @@ def traincheck(station_from="ELGH", station_to="COSHAM"):
             services_list = services_list + data['services']
     
     request = requests.get(rtt_baseaddress + rtt_search + rtt_next_day, auth=auth)
-    if request.status_code == 200:
-        data = request.json()
-        if data['services'] is not None:
-            services_list = services_list + data['services']
-    
-    request = requests.get(rtt_baseaddress + rtt_search + rtt_next_day_2, auth=auth)
     if request.status_code == 200:
         data = request.json()
         if data['services'] is not None:

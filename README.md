@@ -18,3 +18,9 @@ Use `pip install` on your raspberry pi for the following:
 - gpiod
 - lgpio
 - requests
+
+## Running
+
+To use the waveshare e-paper 4.2 inch, run `python screen.py` - it will loop until killed, updating every 5 minutes.
+
+There's also a `test.py` which outputs results to the terminal.

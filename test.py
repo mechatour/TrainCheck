@@ -60,13 +60,13 @@ def display_trains():
 #train_list = traincheck.traincheck("ELGH","SOTON")
 # Display initially then enter loop
 timer = time.perf_counter()
-train_list = traincheck.traincheck("ELGH","COSHAM")
+train_list = traincheck.traincheck("ELGH","COSHAM", datetime.datetime.now())
 display_trains()
 while True:
     if time.perf_counter() > timer + 60.0:
         time_now = datetime.datetime.now().minute
         if time_now % 5 == 0:
-            train_list = traincheck.traincheck("ELGH","COSHAM")
+            train_list = traincheck.traincheck("ELGH","COSHAM",datetime.datetime.now())
             display_trains()
         timer = time.perf_counter()
     else:

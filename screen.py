@@ -15,13 +15,67 @@ if os.path.exists(libdir):
 #logging.basicConfig(level=logging.NOTSET)
 #logging.info("TrainCheck")
 
-def display_trains():
+def display_tomorrow_trains():
+    import traincheck_config
 
-    train_list = traincheck.traincheck()
+    time_now = datetime.datetime.now()
+    tomorrow_time = time_now.replace(minute=0)
+    tomorrow_time = tomorrow_time.replace(hour=traincheck_config.tomorrow_hour)
+    tomorrow_time = tomorrow_time + datetime.timedelta(days=1)
+
+    train_list = traincheck.traincheck(traincheck_config.from_tiploc, traincheck_config.to_tiploc, tomorrow_time)
+    
+    tomorrow_list = []
+
+    for train in train_list:
+
+        planned_time = train[2].strftime("%H:%M")
+        tomorrow_list.append(planned_time)
+
+    # Display Tomorrow's Trains - 23 maximum characters which equates to 4 times
+    tomorrow_text = ""
+    for text in tomorrow_list:
+        tomorrow_text = tomorrow_text + " " + text 
+
+    # Trim if needed
+    if len(tomorrow_text) > 23:
+        tomorrow_text = tomorrow_text[len(tomorrow_text)-23:]
+
+    tomorrow_text = tomorrow_text.rjust(34)
+    draw.text((0,271), tomorrow_text, font = hn_font_19, fill = 0)
+
+def display_current_trains():
+
+    import traincheck_config
+
+    time_now = datetime.datetime.now()
+    this_hour = time_now.replace(minute=0)
+    next_hour = this_hour + datetime.timedelta(hours=1)
+    previous_hour = this_hour - datetime.timedelta(hours=1)
+    previous_2hour = this_hour - datetime.timedelta(hours=2)
+
+    # Get a list of trains due and the past actual arrivals
+    
+    train_list = traincheck.traincheck(traincheck_config.from_tiploc, traincheck_config.to_tiploc, this_hour)
+    train_list += traincheck.traincheck(traincheck_config.from_tiploc, traincheck_config.to_tiploc, next_hour)
+    train_list += traincheck.traincheck(traincheck_config.from_tiploc, traincheck_config.to_tiploc, previous_hour)
+    train_list += traincheck.traincheck(traincheck_config.from_tiploc, traincheck_config.to_tiploc, previous_2hour)
+
+    # Sort by planned arrival time/date
+
+    train_list = sorted(train_list, key=lambda x: x[2])
+
+    # Remove duplicates
+
+    previous_date = time_now.min
+    for x in range(len(train_list)-1,-1,-1):
+        if train_list[x][1] != previous_date:
+            previous_date = train_list[x][1]
+        else:
+            train_list.pop(x)
 
     actual_list = []
     estimated_list = []
-    tomorrow_list = []
 
     title_printed = False
 
@@ -32,35 +86,22 @@ def display_trains():
             draw.text((0,2), main_title, font = hn_font_24, fill = 0)
             title_printed = True
 
-        origin_time = train[1].strftime("%d-%m %H:%M")
         planned_time = train[2].strftime("%H:%M")
         estimated_time = train[4].strftime("%H:%M")
         
-        if train[1].day != datetime.datetime.now().day:
-            estimated_text = ""
-            late_text = ""
-        else:
-            if train[3] == "A":
-                if train[5] == 0 or train[5] < 0:
-                    late_text = "on time"
-                else:
-                    late_text = "+{:0d}".format(int(train[5]))
-            elif train[3] == "E":
-                if train[5] == 0 or train[5] < 0:
-                    late_text = "on time"
-                else:
-                    late_text = "+{:0d} due {}".format(int(train[5]), estimated_time)
+        if train[3] == "A":
+            if train[5] == 0 or train[5] < 0:
+                late_text = "on time"
+            else:
+                late_text = "+{:0d}".format(int(train[5]))
+            actual_list.append((planned_time, late_text))
+        elif train[3] == "E":
+            if train[5] == 0 or train[5] < 0:
+                late_text = "on time"
+            else:
+                late_text = "+{:0d} due {}".format(int(train[5]), estimated_time)
+            estimated_list.append((planned_time, late_text))
         
-        # put them in groups
-
-        if train[1].day != datetime.datetime.now().day:
-            tomorrow_list.append(planned_time)
-        else:
-            if train[3] == "A" :
-                actual_list.append((planned_time, late_text))
-            elif train[3] == "E":
-                estimated_list.append((planned_time, late_text))
-
     # Display Current time
 
     now_text = datetime.datetime.now().strftime("%d %B %Y %H:%M")
@@ -97,19 +138,6 @@ def display_trains():
         draw.text((5, (position*25)+85), estimated_list[x][0] + " " + estimated_list[x][1], font = hn_font_24, fill = 0)
         position = position + 1
 
-    # Display Tomorrow's Trains - 23 maximum characters which equates to 4 times
-
-    tomorrow_text = ""
-    for text in tomorrow_list:
-        tomorrow_text = tomorrow_text + " " + text 
-
-    # Trim if needed
-    if len(tomorrow_text) > 23:
-        tomorrow_text = tomorrow_text[len(tomorrow_text)-23:]
-
-    tomorrow_text = tomorrow_text.rjust(34)
-    draw.text((0,271), tomorrow_text, font = hn_font_19, fill = 0)
-
 def clear_display():
     epd.init()
     epd.Clear()
@@ -118,10 +146,9 @@ def display_titles():
     draw.text((5,195), 'Previous', font = hn_font_19, fill = 0)
     draw.text((9,271), 'Tomorrow', font = hn_font_19, fill = 0)
 
-def display_boxes():
+def display_current_boxes():
     display_date_box()
     display_previous_boxes()
-    display_tomorrow_box()
     display_current_box()
 
 def display_date_box():
@@ -157,14 +184,17 @@ try:
     draw = ImageDraw.Draw(Himage)
 
     clear_display()
-    display_boxes()
+    display_current_boxes()
+    display_tomorrow_box()
     display_titles()
-    display_trains()
+    display_current_trains()
+    display_tomorrow_trains()
     update_partial_image()
 
     display_minute = -1
 
-    # Loop every 15 seconds, checking for a minute change. Every 5 minutes update the display
+    # Loop every 15 seconds, checking for a minute change. Every 5 minutes update the current trains
+    # Every hour, update the trains scheduled for tomorrow
     # Every day at 00:00, reset the display to clear out artifacts
 
     while True:
@@ -173,10 +203,14 @@ try:
             clear_display()
         if time_now % 5 == 0 and time_now != display_minute:
             display_minute = time_now               #unsure only updates once during a minute
-            display_boxes()
+            display_current_boxes()
             display_titles()
-            display_trains()
+            display_current_trains()
             update_partial_image()
+            if time_now == 0:
+                display_tomorrow_box()
+                display_tomorrow_trains()
+                update_partial_image()
         else:
             time.sleep(15.0)
             #logging.info("minute: {}".format(time_now))

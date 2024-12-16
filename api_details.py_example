@@ -1,6 +1,0 @@
-# Sign up for an API key with realtimetrains.co.uk
-# Visit https://api.rtt.io for more info. Username and Password are available under the API Auth Credentials
-# Remove the _example on the end of this file to use so it reads "api_details.py"
-
-rtt_username = "username_here"
-rtt_password = "Password_here"

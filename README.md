@@ -18,6 +18,8 @@ I put this together because I found myself checking the trains before my commute
 
 ## Configuration
 
+The script that runs and updates the e-ink display is called `screen.py`
+
 The project uses the excellent API available from [realtimetrains.co.uk](realtimetrains.co.uk) which requires an account (which is free) for you to use this project.
 
 The font used on the display is the excellent Hack Nerd Font available from [their website.](https://www.nerdfonts.com/font-downloads)

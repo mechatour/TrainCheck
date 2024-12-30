@@ -142,10 +142,6 @@ def clear_display():
     epd.init()
     epd.Clear()
 
-def display_titles():
-    draw.text((5,195), 'Previous', font = hn_font_19, fill = 0)
-    draw.text((9,271), 'Tomorrow', font = hn_font_19, fill = 0)
-
 def display_current_boxes():
     display_date_box()
     display_previous_boxes()
@@ -158,9 +154,12 @@ def display_previous_boxes():
     draw.rectangle((3,217,123,261), outline = 0, fill = 255)
     draw.rectangle((139,217,259,261), outline = 0, fill = 255)
     draw.rectangle((276,217,395,261), outline = 0, fill = 255)
+    draw.text((5,195), '        ', font = hn_font_19, fill = 0)
+    draw.text((5,195), 'Previous', font = hn_font_19, fill = 0)
 
 def display_tomorrow_box():
     draw.rectangle((3,268,395,295), outline = 0, fill = 255)
+    draw.text((9,271), 'Tomorrow', font = hn_font_19, fill = 0)
 
 def display_current_box():
     draw.rectangle((0,75,399,194), fill = 255)
@@ -186,7 +185,6 @@ try:
     clear_display()
     display_current_boxes()
     display_tomorrow_box()
-    display_titles()
     display_current_trains()
     display_tomorrow_trains()
     update_partial_image()

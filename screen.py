@@ -202,7 +202,6 @@ try:
         if time_now % 5 == 0 and time_now != display_minute:
             display_minute = time_now               #unsure only updates once during a minute
             display_current_boxes()
-            display_titles()
             display_current_trains()
             update_partial_image()
             if time_now == 0:

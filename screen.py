@@ -197,9 +197,11 @@ try:
 
     while True:
         time_now = datetime.datetime.now().minute
-        if time_now == 0 and datetime.datetime.now().hour == 0:
-            clear_display()
+
         if time_now % 5 == 0 and time_now != display_minute:
+            if time_now == 0 and datetime.datetime.now().hour == 0:
+                clear_display()
+                time.sleep(5.0)
             display_minute = time_now               #unsure only updates once during a minute
             display_current_boxes()
             display_current_trains()

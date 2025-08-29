@@ -39,7 +39,10 @@ Use `pip install` on your raspberry pi for the following:
 - gpiozero
 - gpiod
 - lgpio
+- RPi.GPIO
 - requests
+
+> It's worth noting that, by default, when a new version of python is installed, the virtual environment will need to have the above installed all over again as the libraries are stored in different subdirectories.
 
 ## Running
 

@@ -1,15 +1,15 @@
 # Sign up for an API key with realtimetrains.co.uk
-# Visit https://api.rtt.io for more info. Username and Password are available under the API Auth Credentials
+# Visit https://api.rtt.io for more info. You will be given an API token which is used to 
+# access the service
 # Remove the _example on the end of this file to use so it reads "traincheck_config.py"
 
-rtt_username = "username_here"
-rtt_password = "Password_here"
+request_token = "replace this with your token"
 
 # To get the tiploc details of the stations, check out the xlsx file
 
 from_tiploc = "START"
 to_tiploc = "END"
 
-# The tomorrow hour is a special box at the bottom of the display to show what time the trains scheduled for the morning are
+# The tomorrow hour is a special box at the bottom of the display to show what time the trains scheduled for the morning are. Trains looked for are from this hour for a couple of hours. Useful if your train is expected at 7:55 and another at 8:15
 
 tomorrow_hour = 7

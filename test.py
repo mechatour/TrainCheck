@@ -60,7 +60,8 @@ def display_trains():
 #train_list = traincheck.traincheck("ELGH","SOTON")
 # Display initially then enter loop
 timer = time.perf_counter()
-train_list = traincheck.traincheck("ELGH","COSHAM", datetime.datetime.now())
+train_list = traincheck.traincheck("ELGH","COSHAM", datetime.datetime.now() - datetime.timedelta(hours=2),240)
+train_list += traincheck.traincheck("ELGH","COSHAM", datetime.datetime.now().replace(minute=0, hour=7) + datetime.timedelta(days=1),120)
 display_trains()
 while True:
     if time.perf_counter() > timer + 60.0:

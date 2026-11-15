@@ -2,6 +2,8 @@
 
 >A project to use a waveshare e-paper (specifically the 4.2 inch model) connected to a Raspberry Pi to display train times in the UK.
 
+## Updated for the latest API on Real Time Trains (v2 as of 2026) ##
+
 The display will show the current date and time updated with the station's names. 
 
 The main section shows current trains that are due into the station and if they're on time or not (for the current hour and next 2 hours). A maximum of the four most recent to arrive trains will be displayed
@@ -20,13 +22,13 @@ I put this together because I found myself checking the trains before my commute
 
 The script that runs and updates the e-ink display is called `screen.py`
 
-The project uses the excellent API available from [realtimetrains.co.uk](realtimetrains.co.uk) which requires an account (which is free) for you to use this project.
+The project uses the excellent API available from [realtimetrains.co.uk](realtimetrains.co.uk) which requires an account (which is free) for you to use this project. Visit [here](https://api-portal.rtt.io/welcome/) to get started.
 
 The font used on the display is the excellent Hack Nerd Font available from [their website.](https://www.nerdfonts.com/font-downloads)
 
 The libraries to drive the display are taken from the [waveshare github](https://github.com/waveshareteam/e-Paper), specifically from [here](https://github.com/waveshareteam/e-Paper/tree/master/RaspberryPi_JetsonNano/python/lib/waveshare_epd)
 
-There is a traincheck_config.py_example file included in the repository. You should use this to fill in the details containing your realtimetrains api username and password, the to and from stations you want to monitor and the morning hour for the next day.
+There is a traincheck_config.py_example file included in the repository. You should use this to fill in the details containing your realtimetrains api authorisation token, the to and from stations you want to monitor and the morning hour for the next day.
 
 ## Dependencies required
 

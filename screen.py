@@ -3,27 +3,38 @@ import traincheck
 import time
 import sys
 import os
-#import logging
 import traceback
 import epaper
 from PIL import Image, ImageDraw, ImageFont
+
+#
+# Pick up the lib directory which contains the libraries for the display & also the font to be uesd
 
 libdir = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'lib')
 if os.path.exists(libdir):
     sys.path.append(libdir)
 
-#logging.basicConfig(level=logging.NOTSET)
-#logging.info("TrainCheck")
+#
+# A separate call to get the train times for tomorrow. Takes today's date and makes amendments, based on the config
+# This routine will use the display routines held in the file to draw the times. The boxes and other info are drawn separately.
 
 def display_tomorrow_trains():
+
     import traincheck_config
+
+    #
+    # Calculate tomorrow's date and time
 
     time_now = datetime.datetime.now()
     tomorrow_time = time_now.replace(minute=0)
     tomorrow_time = tomorrow_time.replace(hour=traincheck_config.tomorrow_hour)
     tomorrow_time = tomorrow_time + datetime.timedelta(days=1)
 
-    train_list = traincheck.traincheck(traincheck_config.from_tiploc, traincheck_config.to_tiploc, tomorrow_time)
+    #
+    # Get a list of tomorrow's trains, starting at the hour in the config and for 2 hours (currently hardcoded)
+    # Format how the time will be displayed and the times to a list
+
+    train_list = traincheck.traincheck(traincheck_config.from_tiploc, traincheck_config.to_tiploc, tomorrow_time, 120)
     
     tomorrow_list = []
 
@@ -32,52 +43,59 @@ def display_tomorrow_trains():
         planned_time = train[2].strftime("%H:%M")
         tomorrow_list.append(planned_time)
 
+    #
     # Display Tomorrow's Trains - 23 maximum characters which equates to 4 times
+
     tomorrow_text = ""
     for text in tomorrow_list:
         tomorrow_text = tomorrow_text + " " + text 
 
-    # Trim if needed
+    #
+    # Trim if needed and right justify
+
     if len(tomorrow_text) > 23:
         tomorrow_text = tomorrow_text[len(tomorrow_text)-23:]
 
     tomorrow_text = tomorrow_text.rjust(34)
     draw.text((0,271), tomorrow_text, font = hn_font_19, fill = 0)
 
+#
+# Get train times for today, with a window either side to capture previous trains and future trains calling at the first station. 
+# This routine will use the display routines held in the file to draw the times. The boxes and other info are drawn separately.
+
 def display_current_trains():
 
     import traincheck_config
 
     time_now = datetime.datetime.now()
-    this_hour = time_now.replace(minute=0)
-    next_hour = this_hour + datetime.timedelta(hours=1)
-    previous_hour = this_hour - datetime.timedelta(hours=1)
-    previous_2hour = this_hour - datetime.timedelta(hours=2)
+    previous_2hour = time_now - datetime.timedelta(hours=2)
 
-    # Get a list of trains due and the past actual arrivals
+    #
+    # Get a list of trains due and the past actual arrivals (going back 2 hours in the past with 4 hours total)
     
-    train_list = traincheck.traincheck(traincheck_config.from_tiploc, traincheck_config.to_tiploc, this_hour)
-    train_list += traincheck.traincheck(traincheck_config.from_tiploc, traincheck_config.to_tiploc, next_hour)
-    train_list += traincheck.traincheck(traincheck_config.from_tiploc, traincheck_config.to_tiploc, previous_hour)
-    train_list += traincheck.traincheck(traincheck_config.from_tiploc, traincheck_config.to_tiploc, previous_2hour)
+    train_list = traincheck.traincheck(traincheck_config.from_tiploc, traincheck_config.to_tiploc, previous_2hour, 240)
+
+    #
+    # Sort the services by the planned arrival time/date and remove duplicates
+    # This was implemented for the earlier version of the API. Commented out while testing the new (2026) API version.
 
     # Sort by planned arrival time/date
+    #train_list = sorted(train_list, key=lambda x: x[2])
 
-    train_list = sorted(train_list, key=lambda x: x[2])
-
-    # Remove duplicates
-
-    previous_date = time_now.min
-    for x in range(len(train_list)-1,-1,-1):
-        if train_list[x][1] != previous_date:
-            previous_date = train_list[x][1]
-        else:
-            train_list.pop(x)
+    #previous_date = time_now.min
+    #for x in range(len(train_list)-1,-1,-1):
+    #    if train_list[x][1] != previous_date:
+    #        previous_date = train_list[x][1]
+    #    else:
+    #        train_list.pop(x)
 
     actual_list = []
     estimated_list = []
 
     title_printed = False
+
+    #
+    # Display the title and also compile the two lists of previous and future trains to be displayed later
 
     for train in train_list:
         if title_printed == False:
@@ -87,31 +105,33 @@ def display_current_trains():
             title_printed = True
 
         planned_time = train[2].strftime("%H:%M")
-        estimated_time = train[4].strftime("%H:%M")
         
         if train[3] == "A":
-            if train[5] == 0 or train[5] < 0:
+            if train[5] <= 0:
                 late_text = "on time"
             else:
                 late_text = "+{:0d}".format(int(train[5]))
             actual_list.append((planned_time, late_text))
         elif train[3] == "E":
-            if train[5] == 0 or train[5] < 0:
+            estimated_time = train[4].strftime("%H:%M")
+            if train[5] <= 0:
                 late_text = "on time"
             else:
                 late_text = "+{:0d} due {}".format(int(train[5]), estimated_time)
             estimated_list.append((planned_time, late_text))
         
-    # Display Current time
+    #
+    # Display Current Date And Time
 
     now_text = datetime.datetime.now().strftime("%d %B %Y %H:%M")
     now_text = now_text.center(27)
     draw.text((0,42), now_text, font = hn_font_24, fill = 0)
 
-    # Display Previous Trains
-
+    #
+    # Display The Previous Trains from actual_list
     # Just the three boxes max and we want to show the 3 most recent, which will be
     # at the end of the list
+
     list_size = len(actual_list)
     first_index = 0
     if list_size > 3:
@@ -124,10 +144,10 @@ def display_current_trains():
         position = position + 1
 
 
-    # Display the Estimated Trains
-
+    # Display the Estimated Trains from estimated_list
     # Four lines seem valid and we want to show the 4 most recent,
     # which will be at the end of the list
+
     list_size = len(estimated_list)
     first_index = 0
     if list_size > 4:
@@ -170,9 +190,17 @@ def update_image():
 def update_partial_image():
     epd.display_Partial(epd.getbuffer(Himage))
 
+#
+# Main update/display routine
+#
+# Estimated and Actual Train times are updated every 5 minutes. Two calls to the API are made. 
+# Every hour two further calls are made to the API for tomorrow's trains.
+# Every day at twelve o'clock, the display is cleared and repopulated with the graphical boxes. This is to help prevent stray pixels
+# and keep the display "clean" looking.
+# Every other draw to the screen for data population has the local area cleared first before populating.
+# This prevents flicker on the e-ink display whilst maintaining legibility.
+
 try:
-
-
     epd = epaper.epaper('epd4in2_V2').EPD()
     font24 = ImageFont.truetype(os.path.join('lib', 'Font.ttc'),24)
     hn_font_24 = ImageFont.truetype(os.path.join('lib', 'HackNerdFont-Regular.ttf'),24)
@@ -189,33 +217,34 @@ try:
     display_tomorrow_trains()
     update_partial_image()
 
+    #
+    # Force draw on first time through loop
     display_minute = -1
 
-    # Loop every 15 seconds, checking for a minute change. Every 5 minutes update the current trains
-    # Every hour, update the trains scheduled for tomorrow
-    # Every day at 00:00, reset the display to clear out artifacts
+    #
+    # Loop every 15 seconds
 
     while True:
-        time_now = datetime.datetime.now().minute
+        hour_now = datetime.datetime.now().hour
+        minute_now = datetime.datetime.now().minute
 
-        if time_now % 5 == 0 and time_now != display_minute:
-            if time_now == 0 and datetime.datetime.now().hour == 0:
+        # Five minute check
+        if minute_now % 5 == 0 and minute_now != display_minute:
+            # Midnight check for screen reset 
+            if minute_now == 0 and hour_now == 0:
                 clear_display()
-                time.sleep(5.0)
-            display_minute = time_now               #unsure only updates once during a minute
             display_current_boxes()
+            display_minute = minute_now
             display_current_trains()
-            update_partial_image()
-            if time_now == 0:
+            if minute_now == 0:
                 display_tomorrow_box()
                 display_tomorrow_trains()
-                update_partial_image()
+            update_partial_image()
         else:
             time.sleep(15.0)
             #logging.info("minute: {}".format(time_now))
 
 except KeyboardInterrupt:    
-    #logging.info("ctrl + c:")
     epaper.epaper('epd4in2_V2').epdconfig.module_exit(cleanup=True)
     exit()
 

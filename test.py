@@ -2,6 +2,12 @@ import datetime
 import traincheck
 import time
 
+def build_list():
+    import traincheck_config
+    train_list = traincheck.traincheck(traincheck_config.from_tiploc, traincheck_config.to_tiploc, datetime.datetime.now() - datetime.timedelta(hours=2),240)
+    train_list += traincheck.traincheck(traincheck_config.from_tiploc, traincheck_config.to_tiploc, datetime.datetime.now().replace(minute=0, hour=traincheck_config.tomorrow_hour) + datetime.timedelta(days=1),120)
+    return train_list
+
 def display_trains():
 
     actual_list = []
@@ -13,26 +19,23 @@ def display_trains():
         planned_time = train[2].strftime("%H:%M")
         estimated_time = train[4].strftime("%H:%M")
         
-        if train[1].day != datetime.datetime.now().day:
-            estimated_text = ""
-            late_text = ""
-        else:
-            if train[3] == "A":
-                estimated_text = "- Actual " + estimated_time
-            elif train[3] == "E":
-                estimated_text = "- Estimated " + estimated_time
-            elif train[3] == "F":
-                estimated_text = "- Future Booking"
+        estimated_text = ""
+        late_text = ""
 
-            if train[3] != "F":
-                if train[5] == 0:
-                    late_text = "- On time"
-                elif train[5] == 1:
-                    late_text = "- 1 minute late"
-                else:
-                    late_text = "- {:0d} minutes late".format(int(train[5]))
+        if train[3] == "A":
+            estimated_text = "- Actual " + estimated_time
+        elif train[3] == "E":
+            estimated_text = "- Estimated " + estimated_time
+        elif train[3] == "F":
+            estimated_text = "- Future Booking"
+
+        if train[3] != "F":
+            if train[5] == 0:
+                late_text = "- On time"
+            elif train[5] == 1:
+                late_text = "- 1 minute late"
             else:
-                late_text = ""
+                late_text = "- {:0d} minutes late".format(int(train[5]))
         
         train_text = "{} - {} - Planned {} {} {}".format(origin_time, train[0], planned_time, estimated_text, late_text)
 
@@ -60,15 +63,13 @@ def display_trains():
 #train_list = traincheck.traincheck("ELGH","SOTON")
 # Display initially then enter loop
 timer = time.perf_counter()
-train_list = traincheck.traincheck("ELGH","COSHAM", datetime.datetime.now() - datetime.timedelta(hours=2),240)
-train_list += traincheck.traincheck("ELGH","COSHAM", datetime.datetime.now().replace(minute=0, hour=7) + datetime.timedelta(days=1),120)
+train_list = build_list()
 display_trains()
 while True:
-    if time.perf_counter() > timer + 60.0:
-        time_now = datetime.datetime.now().minute
-        if time_now % 5 == 0:
-            train_list = traincheck.traincheck("ELGH","COSHAM",datetime.datetime.now())
-            display_trains()
-        timer = time.perf_counter()
+    time_now = datetime.datetime.now().minute
+    if time_now % 5 == 0:
+        train_list = build_list()
+        display_trains()
+        time.sleep(70.0)
     else:
         time.sleep(50.0)

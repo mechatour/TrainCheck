@@ -92,7 +92,6 @@ WantedBy=default.target
 
 ## Future
 
-- I would like it to be a little more efficient than it is at the moment. For instance, it makes 4 calls every 5 minutes to the API. Some of the data is duplicated and needs to be stripped out. This is a quirk with the API that fetches 30 minutes either side of the hour for the trains that are due to arrive, but also if they actually arrive late. If the time due overlaps into the next hour then a duplication is created. I think an API that could be queried with just the due times would be better.
 - I would like to support other displays. I have nothing to test on though. At present it's all hard coded values, but I would like to make that all relative to the display size, including adjusting font sizes. I'm open to contributions if you want to get involved :)
 - On that note, maybe an option for a portrait view, as it's currently landscape.
 - I would also like to add some fancy pictures of trains or something to it. Some way of making it look less utilitarian.

@@ -87,9 +87,9 @@ def traincheck(station_from, station_to, time_search, time_window):
             #print(f"Service: {service}")
 
             origin_name = ""
-            origin_time = 0
-            planned = 0
-            departure = 0
+            origin_time = datetime.now()
+            planned = datetime.now()
+            departure = datetime.now()
             difference = 0
             type = ""
 

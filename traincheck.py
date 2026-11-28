@@ -70,8 +70,8 @@ def traincheck(station_from, station_to, time_search, time_window):
                 start = data['query']['location']['description']
                 end = data['query']['filterTo']['description']
             
-            if data['services'] is not None:
-                services_list = services_list + data['services']
+                if 'services' in data:
+                    services_list = services_list + data['services']
 
     except ConnectionError as E:
         print (f"Exception (requesting data): {E}")
